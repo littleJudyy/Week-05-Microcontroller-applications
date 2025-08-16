@@ -390,24 +390,38 @@ Memory analysis complete!
 
 | Memory Section | Variable/Function | Address (ที่แสดงออกมา) | Memory Type |
 |----------------|-------------------|----------------------|-------------|
-| Stack | stack_var | 0x_______ | SRAM |
-| Global SRAM | sram_buffer | 0x_______ | SRAM |
-| Flash | flash_string | 0x_______ | Flash |
-| Heap | heap_ptr | 0x_______ | SRAM |
+| Stack | stack_var | 0x3ffb4550 | SRAM |
+| Global SRAM | sram_buffer | 0x3ffb16ac | SRAM |
+| Flash | flash_string | 0x3f407d64 | Flash |
+| Heap | heap_ptr | 0x3ffb526c | SRAM |
 
 **Table 2.2: Memory Usage Summary**
 
 | Memory Type | Free Size (bytes) | Total Size (bytes) |
 |-------------|-------------------|--------------------|
-| Internal SRAM | _________ | 520,192 |
-| Flash Memory | _________ | varies |
-| DMA Memory | _________ | varies |
+| Internal SRAM | 380124 bytes | 520,192 |
+| Flash Memory | 0x3f407d64 | varies |
+| DMA Memory | 303088 bytes | varies |
 
 ### คำถามวิเคราะห์ (ง่าย)
 
 1. **Memory Types**: SRAM และ Flash Memory ใช้เก็บข้อมูลประเภทไหน?
+SRAM (Static RAM): ใช้สำหรับเก็บข้อมูลที่เปลี่ยนแปลงได้ตลอดเวลาขณะที่โปรแกรมทำงาน เช่น ตัวแปรทั่วไป (ทั้งแบบ global และ local), ข้อมูลที่จองหน่วยความจำแบบไดนามิก (Heap) และข้อมูลการทำงานของฟังก์ชันต่างๆ (Stack) SRAM เป็นหน่วยความจำที่ทำงานเร็วแต่ข้อมูลจะหายไปเมื่อปิดเครื่อง
+Flash Memory: ใช้สำหรับเก็บข้อมูลที่ไม่เปลี่ยนแปลงหรือข้อมูลถาวร เช่น โค้ดโปรแกรม (firmware) และข้อมูลคงที่ (constant data) อย่างข้อความ flash_string ข้อมูลใน Flash จะยังคงอยู่แม้จะไม่มีไฟเลี้ยง
+
 2. **Address Ranges**: ตัวแปรแต่ละประเภทอยู่ใน address range ไหน?
+Stack (stack_var): 0x3ffb4550
+Global SRAM (sram_buffer): 0x3ffb16ac
+Flash (flash_string): 0x3f407d64
+Heap (heap_ptr): 0x3ffb526c
+จะเห็นได้ว่าตัวแปรที่อยู่ใน SRAM (Stack, Global SRAM, Heap) จะมี Address ที่ขึ้นต้นใกล้เคียงกัน (0x3ffbxxxx) ในขณะที่ข้อมูลใน Flash จะมี Address ที่แตกต่างออกไปอย่างชัดเจน (0x3f4xxxx)
+
 3. **Memory Usage**: ESP32 มี memory ทั้งหมดเท่าไร และใช้ไปเท่าไร?
+Internal SRAM
+รวมทั้งสิ้น = 520,192 ไบต์
+เหลือว่าง = 380,124 ไบต์
+ที่ใช้ไป = 520,192 − 380,124 = 140,068 ไบต์
+Flash Memory และ DMA Memory: ข้อมูลที่ให้มาไม่ได้ระบุขนาดทั้งหมดที่แน่ชัด จึงไม่สามารถสรุปขนาดที่ใช้ไปทั้งหมดได้ แต่ทราบว่ามี DMA Memory ที่ยังไม่ได้ใช้งานอยู่ 303,088 ไบต์
 
 ---
 
