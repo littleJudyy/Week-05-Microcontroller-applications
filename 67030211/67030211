@@ -1,0 +1,186 @@
+**ข้อมูลนักศึกษา:**
+- ชื่อ: วิชญาพร เนียมเที่ยง
+- รหัสนักศึกษา: 67030211
+- วันที่ทำการทดลอง: 31/10/68
+
+**Checklist การทดลอง:**
+- [ ] Environment setup สำเร็จ (ต่อเนื่องจากสัปดาห์ที่ 4)
+- [ ] Memory architecture analysis เสร็จสมบูรณ์
+- [ ] Cache performance testing เสร็จสมบูรณ์
+- [ ] Dual-core analysis เสร็จสมบูรณ์
+- [ ] รายงานผลการทดลองครบถ้วน
+
+**คะแนนประเมิน:**
+- การเตรียม Environment และ Continuity (15 คะแนน): _______
+- Memory Analysis (30 คะแนน): _______
+- Cache Performance (25 คะแนน): _______
+- Dual-Core Analysis (25 คะแนน): _______
+- รายงานและการเปรียบเทียบ (5 คะแนน): _______
+- **รวม (100 คะแนน): _______**
+
+**คำถามเพิ่มเติม:**
+1. เปรียบเทียบประสบการณ์การใช้ Docker ในสัปดาห์นี้กับสัปดาห์ที่ 4:
+```
+เรียนรู้การใช้ Docker แบบพื้นฐาน ใช้เพียง Core เดียวในการประมวลผล แต่สัปดาห์นี้เราได้ลองระบบ Dual-Core ทำให้เห็นถึงการทำงานแบบขนาน (parallel processing) ที่มีประสิทธิภาพมากขึ้น งานสามารถกระจายไปยังแต่ละ core ลดเวลาในการรัน และทำให้เข้าใจโครงสร้างภายในของ ESP32 ชัดเจนขึ้น
+```
+
+2. สิ่งที่เรียนรู้เพิ่มเติมเกี่ยวกับ ESP32 architecture:
+```
+ได้เข้าใจองค์ประกอบหลักของสถาปัตยกรรม เช่น การแยก Core ออกเป็น PRO_CPU และ APP_CPU, โครงสร้างหน่วยความจำแบบหลายระดับ, การทำงานของ Peripheral ต่าง ๆ และวิธีเชื่อมต่อ Bus ที่ใช้ในการสื่อสารภายในชิป
+```
+
+3. ความท้าทายที่พบในการทำ architecture analysis:
+```
+เจอปัญหา error จากการลืม include library math.h ทำให้คอมไพล์ไม่ผ่าน และต้อง debug เพิ่ม นอกจากนี้การอ่านผลลัพธ์จาก hardware จริงค่อนข้างยาก เพราะต้องทำความเข้าใจ address และ memory mapping ที่ซับซ้อน
+```
+---
+
+### คำถามทบทวน
+
+1. **Docker Commands**: คำสั่ง `docker-compose up -d` และ `docker-compose exec esp32-dev bash` ทำอะไร?
+```
+docker-compose up -d ใช้สร้างและรัน container จากไฟล์ docker-compose.yml แบบ background mode (ไม่แสดง log บนหน้าจอ)
+
+docker-compose exec esp32-dev bash ใช้เข้าไปทำงานภายใน container ที่ชื่อ esp32-dev ผ่าน bash shell เพื่อรันคำสั่งภายใน
+```
+
+2. **ESP-IDF Tools**: เครื่องมือไหนจาก Lab4 ที่จะใช้ในการ build โปรแกรม ESP32?
+```
+คำสั่ง idf.py build เป็นเครื่องมือหลักที่ใช้ compile และ build โค้ดโปรแกรมให้พร้อมสำหรับการ flash ลงบนบอร์ด ESP32
+```
+
+3. **New Tools**: เครื่องมือใหม่ที่ติดตั้ง (tree, htop) ใช้ทำอะไร?
+```
+tree ใช้สำหรับดูโครงสร้างไฟล์ในรูปแบบต้นไม้ ทำให้เห็นลำดับ directory ได้ชัดเจน
+
+htop ใช้ดูการใช้ทรัพยากรระบบ เช่น CPU, RAM, process ทั้งหมดแบบ real-time และ interactive
+```
+
+4. **Architecture Focus**: การศึกษา ESP32 architecture แตกต่างจากการทำ arithmetic ใน Lab4 อย่างไร?
+```
+การศึกษา ESP32 architecture จะเน้นไปที่โครงสร้างฮาร์ดแวร์ การจัดการหน่วยความจำ และการสื่อสารระหว่าง core
+ส่วน Lab4 (arithmetic) เน้นการประมวลผลเชิงคณิตศาสตร์ เช่น การคำนวณและตรรกะของโปรแกรม
+```
+---
+
+### การบันทึกผลการทดลอง 
+
+**Table 2.1: Memory Address Analysis**
+
+| Memory Section | Variable/Function | Address (ที่แสดงออกมา) | Memory Type |
+|----------------|-------------------|----------------------|-------------|
+| Stack | stack_var | 0x3ffb4550 | SRAM |
+| Global SRAM | sram_buffer | 0x3ffb16ac | SRAM |
+| Flash | flash_string | 0x3f407b64 | Flash |
+| Heap | heap_ptr | 0x3ffb5264 | SRAM |
+
+**Table 2.2: Memory Usage Summary**
+
+| Memory Type | Free Size (bytes) | Total Size (bytes) |
+|-------------|-------------------|--------------------|
+| Internal SRAM | 380096 bytes | 520,192 |
+| Flash Memory | 2 MB | varies |
+| DMA Memory | 303096 bytes| varies |
+
+### คำถามวิเคราะห์ (ง่าย)
+
+1. **Memory Types**: SRAM และ Flash Memory ใช้เก็บข้อมูลประเภทไหน?
+```
+SRAM: เก็บข้อมูลชั่วคราวที่เปลี่ยนแปลงบ่อย เช่น stack และ heap ใช้งานได้เร็วแต่ข้อมูลหายเมื่อปิดเครื่อง
+Flash Memory: เก็บข้อมูลถาวร เช่น โปรแกรมหลัก (firmware) และค่าคงที่
+```
+
+2. **Address Ranges**: ตัวแปรแต่ละประเภทอยู่ใน address range ไหน?
+```
+Stack และ Global Variables อยู่ในช่วง 0x3FFB_0000 ~ 0x3FFC_0000
+
+Heap จะอยู่ในช่วง 0x3FFB_0000 ~ 0x3FFE_FFFF หรือ PSRAM (0x3F80_0000~)
+
+Flash และ Code อยู่ในช่วง 0x3F40_0000 ~ 0x3F7F_FFFF และ 0x4008_0000 ~ 0x400B_FFFF
+```
+
+3. **Memory Usage**: ESP32 มี memory ทั้งหมดเท่าไร และใช้ไปเท่าไร?
+```
+หน่วยความจำทั้งหมดมี 520,192 bytes และใช้ไปแล้ว 380,096 bytes แสดงว่าระบบยังมีพื้นที่ว่างเพียงพอสำหรับโปรแกรมเพิ่มเติม
+```
+
+---
+
+
+### การบันทึกผลการทดลอง
+
+**Table 3.1: Cache Performance Results**
+
+| Test Type | Memory Type | Time (μs) | Ratio vs Sequential |
+|-----------|-------------|-----------|-------------------|
+| Sequential | Internal SRAM | 5187 | 1.00x |
+| Random | Internal SRAM | 7938 | 1.53x |
+| Sequential | External Memory | 5057 | 0.97x |
+| Random | External Memory | 8195 | 1.62x |
+
+**Table 3.2: Stride Access Performance**
+
+| Stride Size | Time (μs) | Ratio vs Stride 1 |
+|-------------|-----------|------------------|
+| 1 | 5523 | 1.00x |
+| 2 | 2709 | 0.49x |
+| 4 | 1487 | 0.27x |
+| 8 | 663 | 0.12x |
+| 16 | 838 | 0.15x |
+
+### คำถามวิเคราะห์
+1. **Cache Efficiency**: ทำไม sequential access เร็วกว่า random access?
+```
+การเข้าถึงแบบ sequential ทำงานได้เร็วกว่าเพราะ cache preload ข้อมูลไว้ล่วงหน้าในบล็อกเดียวกัน แต่ random access ทำให้ cache ต้องโหลดใหม่บ่อยครั้ง
+```
+
+2. **Memory Hierarchy**: ความแตกต่างระหว่าง internal SRAM และ external memory คืออะไร?
+```
+Internal SRAM มีความเร็วสูงและอยู่ใกล้ CPU มากกว่า ส่วน external memory ต้องผ่าน bus ภายนอก ทำให้ latency สูงขึ้น
+```
+
+3. **Stride Patterns**: stride size ส่งผลต่อ performance อย่างไร?
+```
+ยิ่ง stride ขนาดใหญ่ขึ้น อัตราการเข้าถึงอาจเร็วขึ้นช่วงแรกเพราะลดจำนวน loop แต่ถ้าใหญ่เกินจะเกิด cache miss มากขึ้น ทำให้ประสิทธิภาพลดลง
+```
+---
+
+### การบันทึกผลการทดลอง
+
+**Table 4.1: Dual-Core Performance Summary**
+
+| Metric | Core 0 (PRO_CPU) | Core 1 (APP_CPU) |
+|--------|-------------------|-------------------|
+| Total Iterations | 100 | 150 |
+| Average Time per Iteration (μs) | 122 | 9679 |
+| Total Execution Time (ms) | 4992 | 5945 |
+| Task Completion Rate | 20.04 iter/sec	 | 25.23 iter/sec|
+
+**Table 4.2: Inter-Core Communication**
+
+| Metric | Value |
+|--------|-------|
+| Messages Sent | 100 |
+| Messages Received | 10 |
+| Average Latency (μs) | 12,029 |
+| Queue Overflow Count | 1 |
+
+### คำถามวิเคราะห์
+
+1. **Core Specialization**: จากผลการทดลอง core ไหนเหมาะกับงานประเภทใด?
+```
+Core 0 (PRO_CPU): เหมาะกับงานที่ต้องการความต่อเนื่องและความเร็ว เช่น sensor data หรือ task ที่ต้องรันตลอดเวลา
+
+Core 1 (APP_CPU): เหมาะกับงานที่ต้องประมวลผลข้อมูลขนาดใหญ่ เช่น network handling หรือ UI rendering
+```
+
+2. **Communication Overhead**: inter-core communication มี overhead เท่าไร?
+```
+จากผลการทดลอง พบว่าการสื่อสารระหว่าง core มี latency เฉลี่ย 12,029 μs ซึ่งถือว่าอยู่ในระดับที่ยอมรับได้สำหรับงานทั่วไป
+```
+
+3. **Load Balancing**: การกระจายงานระหว่าง cores มีประสิทธิภาพหรือไม่?
+```
+ระบบมีการแบ่งงานที่ดี ทั้งสอง core สามารถทำงานพร้อมกันได้ ทำให้ลดเวลาการทำงานรวมและเพิ่ม throughput โดยรวมของระบบ
+```
+---
